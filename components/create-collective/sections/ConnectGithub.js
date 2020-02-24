@@ -110,7 +110,6 @@ class ConnectGithub extends React.Component {
   };
 
   async createCollectives(collectiveInputType) {
-    console.log(collectiveInputType);
     collectiveInputType.type = 'COLLECTIVE';
     try {
       const res = await this.props.createCollectiveFromGithub(collectiveInputType);
@@ -222,7 +221,11 @@ class ConnectGithub extends React.Component {
                           repositories={repositories}
                           sendRepoInfo={info => {
                             this.handleChange('github', info);
-                            this.changeRoute({ verb: 'create', category: 'opensource', step: 'form' });
+                            this.changeRoute({
+                              verb: 'create',
+                              category: 'opensource',
+                              step: 'form',
+                            });
                             this.handleChange('category', 'opensource');
                           }}
                         />
@@ -394,4 +397,4 @@ class ConnectGithub extends React.Component {
   }
 }
 
-export default injectIntl(withUser(addCreateCollectiveFromGithubMutation(ConnectGithub)));
+export default injectIntl(withUser(ConnectGithub));

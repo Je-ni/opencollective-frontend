@@ -13,7 +13,7 @@ import ErrorPage from '../ErrorPage';
 import SignInOrJoinFree from '../SignInOrJoinFree';
 import { withUser } from '../UserProvider';
 
-import { addCreateCollectiveMutation } from '../../lib/graphql/mutations';
+import { addCreateCollectiveMutation, addCreateCollectiveFromGithubMutation } from '../../lib/graphql/mutations';
 import { getErrorFromGraphqlException } from '../../lib/utils';
 import { Router } from '../../server/pages';
 
@@ -116,7 +116,6 @@ class NewCreateCollective extends Component {
   }
 
   async createCollective(CollectiveInputType) {
-    console.log('input', CollectiveInputType);
     if (!CollectiveInputType.tos) {
       this.setState({
         error: 'Please accept the terms of service',
@@ -138,32 +137,19 @@ class NewCreateCollective extends Component {
     }
     CollectiveInputType.type = 'COLLECTIVE';
     CollectiveInputType.HostCollectiveId = this.host.id;
-    if (CollectiveInputType.tags) {
-      // Meetup returns an array of tags, while the regular input stores a string
-      if (typeof CollectiveInputType.tags === 'string') {
-        CollectiveInputType.tags.split(',');
-      }
-
-      CollectiveInputType.tags =
-        Array.isArray(CollectiveInputType.tags) && CollectiveInputType.tags.length > 0
-          ? CollectiveInputType.tags.map(t => t.trim())
-          : null;
-    }
-    CollectiveInputType.tags = [...(CollectiveInputType.tags || []), ...(this.host.tags || [])] || [];
-    if (CollectiveInputType.category) {
-      CollectiveInputType.tags.push(CollectiveInputType.category);
-    }
-    CollectiveInputType.data = CollectiveInputType.data || {};
-    CollectiveInputType.data.members = CollectiveInputType.members;
-    CollectiveInputType.data.meetupSlug = CollectiveInputType.meetup;
     CollectiveInputType.slug = CollectiveInputType.website;
     delete CollectiveInputType.category;
     delete CollectiveInputType.tos;
     delete CollectiveInputType.hostTos;
     try {
-      console.log('trying', CollectiveInputType);
-      const res = await this.props.createCollective(CollectiveInputType);
-      const collective = res.data.createCollective;
+      let collective;
+      if (CollectiveInputType.githubHandle) {
+        const res = await this.props.createCollectiveFromGithub(CollectiveInputType);
+        collective = res.data.createCollectiveFromGithub;
+      } else {
+        const res = await this.props.createCollective(CollectiveInputType);
+        collective = res.data.createCollective;
+      }
       const successParams = {
         slug: collective.slug,
       };
@@ -196,6 +182,8 @@ class NewCreateCollective extends Component {
     const { LoggedInUser, query } = this.props;
     const { category, form, error } = this.state;
     const { token } = query;
+
+    console.log(this.state);
 
     const canApply = get(this.host, 'settings.apply');
 
@@ -255,4 +243,6 @@ class NewCreateCollective extends Component {
   }
 }
 
-export default injectIntl(withUser(addCreateCollectiveMutation(NewCreateCollective)));
+export default injectIntl(
+  withUser(addCreateCollectiveMutation(addCreateCollectiveFromGithubMutation(NewCreateCollective))),
+);
