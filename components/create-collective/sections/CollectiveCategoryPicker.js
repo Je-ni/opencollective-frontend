@@ -64,9 +64,11 @@ class CollectiveCategoryPicker extends React.Component {
       <div className="CollectiveCategoryPicker">
         <style jsx>
           {`
-            .categoryImage {
-              height: 256px;
-              width: 256px;
+            @media screen and (min-width: 52em) {
+              .categoryImage {
+                height: 256px;
+                width: 256px;
+              }
             }
             @media screen and (max-width: 40em) {
               .categoryImage {
@@ -74,10 +76,22 @@ class CollectiveCategoryPicker extends React.Component {
                 width: 192px;
               }
             }
+            @media screen and (min-width: 40em) and (max-width: 52em) {
+              .categoryImage {
+                height: 208px;
+                width: 208px;
+              }
+            }
           `}
         </style>
         <Box my={4}>
-          <H1 fontSize={['H5', 'H3']} lineHeight={['H5', 'H3']} fontWeight="bold" color="black.900" textAlign="center">
+          <H1
+            fontSize={['H5', 'H3', null, null]}
+            lineHeight={['H5', 'H3', null, null]}
+            fontWeight="bold"
+            color="black.900"
+            textAlign="center"
+          >
             {intl.formatMessage(this.messages.header)}{' '}
           </H1>
         </Box>
@@ -85,7 +99,7 @@ class CollectiveCategoryPicker extends React.Component {
           <Box alignItems="center">
             <Flex justifyContent="center" alignItems="center" flexDirection={['column', 'row']}>
               <Fragment>
-                <Container alignItems="center" width={['312px']} mb={[4, null, null, 0]}>
+                <Container alignItems="center" width={[null, 280, 312]} mb={[4, null, null, 0]}>
                   <Flex flexDirection="column" justifyContent="center" alignItems="center">
                     <img
                       className="categoryImage"
@@ -110,10 +124,10 @@ class CollectiveCategoryPicker extends React.Component {
                   </Flex>
                 </Container>
                 <Container
-                  borderLeft={['none', null, null, `1px solid #E6E8EB`]}
-                  borderTop={['1px solid #E6E8EB', null, null, 'none']}
+                  borderLeft={['none', '1px solid #E6E8EB', null]}
+                  borderTop={['1px solid #E6E8EB', 'none', null]}
                   alignItems="center"
-                  width={['312px']}
+                  width={[null, 280, 312]}
                   mb={[4, null, null, 0]}
                 >
                   <Flex flexDirection="column" justifyContent="center" alignItems="center">
@@ -140,10 +154,10 @@ class CollectiveCategoryPicker extends React.Component {
                   </Flex>
                 </Container>
                 <Container
-                  borderLeft={['none', null, null, '1px solid #E6E8EB']}
-                  borderTop={['1px solid #E6E8EB', null, null, 'none']}
+                  borderLeft={['none', '1px solid #E6E8EB', null]}
+                  borderTop={['1px solid #E6E8EB', 'none', null]}
                   alignItems="center"
-                  width={['312px']}
+                  width={[null, 280, 312]}
                 >
                   <Flex flexDirection="column" justifyContent="center" alignItems="center">
                     <img
