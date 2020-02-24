@@ -101,7 +101,7 @@ class CollectiveCategoryPicker extends React.Component {
                       px={3}
                       onClick={() => {
                         this.handleChange('category', 'opensource');
-                        this.changeRoute({ verb: 'create', category: 'openSource' });
+                        this.changeRoute({ verb: 'create', category: 'opensource' });
                       }}
                     >
                       {intl.formatMessage(this.messages.opensource)}

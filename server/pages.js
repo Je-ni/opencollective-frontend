@@ -66,7 +66,7 @@ const pages = routes()
 // New Create Collective Flow
 pages.add(
   'new-create-collective',
-  '/:hostCollectiveSlug?/:verb(apply|create)/v2/:category(openSource|community|climate)?/:step(form)?',
+  '/:hostCollectiveSlug?/:verb(apply|create)/v2/:category(opensource|community|climate)?/:step(form)?',
 );
 
 // Events using new collective page

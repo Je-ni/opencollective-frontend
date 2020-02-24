@@ -13,6 +13,7 @@ import StyledInput from '../../StyledInput';
 import StyledInputField from '../../StyledInputField';
 import StyledInputGroup from '../../StyledInputGroup';
 import StyledButton from '../../StyledButton';
+import MessageBox from '../../MessageBox';
 
 import { defaultBackgroundImage } from '../../../lib/constants/collectives';
 import { Router } from '../../../server/pages';
@@ -82,7 +83,7 @@ class CreateCollectiveForm extends React.Component {
   };
 
   render() {
-    const { intl } = this.props;
+    const { intl, error } = this.props;
 
     const initialValues = {
       name: '',
@@ -152,6 +153,13 @@ class CreateCollectiveForm extends React.Component {
             </P>
           </Box>
         </Flex>
+        {error && (
+          <Flex alignItems="center" justifyContent="center">
+            <MessageBox type="error" withIcon mb={[1, 3]}>
+              {error.replace('GraphQL error: ', 'Error: ')}
+            </MessageBox>
+          </Flex>
+        )}
         <Flex alignItems="center" justifyContent="center">
           <Container
             mb={[1, 5]}

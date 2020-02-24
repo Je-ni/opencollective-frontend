@@ -12,6 +12,7 @@ import StyledInputField from '../../StyledInputField';
 import Loading from '../../Loading';
 import GithubRepositoriesFAQ from '../../faqs/GithubRepositoriesFAQ';
 import { withUser } from '../../UserProvider';
+import MessageBox from '../../MessageBox';
 
 import { Router } from '../../../server/pages';
 import { getGithubRepos } from '../../../lib/api';
@@ -66,7 +67,7 @@ class ConnectGithub extends React.Component {
       loadingRepos: false,
       repositories: [],
       checked: false,
-      error: {},
+      error: null,
     };
   }
 
@@ -141,7 +142,7 @@ class ConnectGithub extends React.Component {
 
   render() {
     const { token, intl } = this.props;
-    const { repositories, loadingRepos } = this.state;
+    const { repositories, loadingRepos, error } = this.state;
 
     return (
       <Flex className="openSourceApply" flexDirection="column" m={[3, 4]} mb={[4]}>
@@ -204,6 +205,13 @@ class ConnectGithub extends React.Component {
             {loadingRepos && <Loading />}
             {repositories.length !== 0 && (
               <Fragment>
+                {error && (
+                  <Flex alignItems="center" justifyContent="center">
+                    <MessageBox type="error" withIcon mb={[1, 3]}>
+                      {error}
+                    </MessageBox>
+                  </Flex>
+                )}
                 <Flex justifyContent="center" width={1} mb={4} flexDirection={['column', 'row']}>
                   <Box width={[0, null, null, '24em']} />
                   <Box maxWidth={[300, 500]} minWidth={[200, 400]}>
@@ -266,6 +274,13 @@ class ConnectGithub extends React.Component {
                 </P>
               </Box>
             </Flex>
+            {error && (
+              <Flex alignItems="center" justifyContent="center">
+                <MessageBox type="error" withIcon mb={[1, 3]}>
+                  {error}
+                </MessageBox>
+              </Flex>
+            )}
             <Flex alignItems="center" justifyContent="center">
               <Box mb={[1, 5]} minWidth={['300px', '576px']} maxWidth={['500px', '576px']} px={[1, 4]}>
                 <P fontSize="Caption" mb={3}>
@@ -329,7 +344,7 @@ class ConnectGithub extends React.Component {
                 <Flex justifyContent="center" alignItems="center" flexDirection={['column', 'row']}>
                   <StyledButton
                     mx={2}
-                    mb={[3, null, null, 'none']}
+                    mb={[3, null, null, 0]}
                     px={[2, 3]}
                     textAlign="center"
                     buttonSize="small"
@@ -337,7 +352,11 @@ class ConnectGithub extends React.Component {
                     maxWidth="196px"
                     buttonStyle="primary"
                     onClick={() => {
-                      window.location.replace(this.getGithubConnectUrl());
+                      if (!this.state.checked) {
+                        this.setState({ error: 'Please accept the terms of service' });
+                      } else {
+                        window.location.replace(this.getGithubConnectUrl());
+                      }
                     }}
                     loading={this.state.loadingRepos}
                     disabled={this.state.loadingRepos}

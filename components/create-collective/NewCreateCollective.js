@@ -33,13 +33,11 @@ class NewCreateCollective extends Component {
       collective: { type: 'COLLECTIVE' },
       result: {},
       category: null,
-      step: null,
       github: null,
       form: false,
+      error: null,
     };
     this.createCollective = this.createCollective.bind(this);
-    this.error = this.error.bind(this);
-    this.resetError = this.resetError.bind(this);
     this.messages = defineMessages({
       'host.apply.title': {
         id: 'host.apply.title',
@@ -75,6 +73,9 @@ class NewCreateCollective extends Component {
       if (query.step === 'form') {
         this.setState({ form: true });
       }
+      if (!query.step) {
+        this.setState({ form: false });
+      }
     } else if (query.category === 'community') {
       this.setState({ category: 'community' });
     } else if (query.category === 'climate') {
@@ -87,12 +88,16 @@ class NewCreateCollective extends Component {
 
   componentDidUpdate(oldProps) {
     const { query } = this.props;
+    if (oldProps.query.step !== query.step) {
+      if (query.step === 'form') {
+        this.setState({ form: true });
+      } else {
+        this.setState({ form: false });
+      }
+    }
     if (oldProps.query.category !== query.category) {
       if (query.category === 'opensource' || query.token) {
         this.setState({ category: 'opensource' });
-        if (query.step === 'form') {
-          this.setState({ form: true });
-        }
       } else if (query.category === 'community') {
         this.setState({ category: 'community' });
       } else if (query.category === 'climate') {
@@ -104,14 +109,6 @@ class NewCreateCollective extends Component {
     return;
   }
 
-  error(msg) {
-    this.setState({ result: { error: msg } });
-  }
-
-  resetError() {
-    this.error();
-  }
-
   handleChange(key, value) {
     this.setState({
       [key]: value,
@@ -119,20 +116,26 @@ class NewCreateCollective extends Component {
   }
 
   async createCollective(CollectiveInputType) {
-    console.log(CollectiveInputType);
+    console.log('input', CollectiveInputType);
     if (!CollectiveInputType.tos) {
       this.setState({
-        result: { error: 'Please accept the terms of service' },
+        error: 'Please accept the terms of service',
       });
       return;
     }
     if (get(this.host, 'settings.tos') && !CollectiveInputType.hostTos) {
       this.setState({
-        result: { error: 'Please accept the terms of fiscal sponsorship' },
+        error: 'Please accept the terms of fiscal sponsorship',
       });
       return;
     }
     this.setState({ status: 'loading' });
+    if (this.state.github) {
+      CollectiveInputType.githubHandle = this.state.github.handle;
+      if (this.state.github.repo) {
+        CollectiveInputType.githubRepo = this.state.github.repo;
+      }
+    }
     CollectiveInputType.type = 'COLLECTIVE';
     CollectiveInputType.HostCollectiveId = this.host.id;
     if (CollectiveInputType.tags) {
@@ -153,10 +156,12 @@ class NewCreateCollective extends Component {
     CollectiveInputType.data = CollectiveInputType.data || {};
     CollectiveInputType.data.members = CollectiveInputType.members;
     CollectiveInputType.data.meetupSlug = CollectiveInputType.meetup;
+    CollectiveInputType.slug = CollectiveInputType.website;
     delete CollectiveInputType.category;
     delete CollectiveInputType.tos;
     delete CollectiveInputType.hostTos;
     try {
+      console.log('trying', CollectiveInputType);
       const res = await this.props.createCollective(CollectiveInputType);
       const collective = res.data.createCollective;
       const successParams = {
@@ -183,14 +188,13 @@ class NewCreateCollective extends Component {
       }
     } catch (err) {
       const errorMsg = getErrorFromGraphqlException(err).message;
-      this.setState({ status: 'idle', result: { error: errorMsg } });
-      throw new Error(errorMsg);
+      this.setState({ status: 'idle', error: errorMsg });
     }
   }
 
   render() {
     const { LoggedInUser, query } = this.props;
-    const { category, form } = this.state;
+    const { category, form, error } = this.state;
     const { token } = query;
 
     const canApply = get(this.host, 'settings.apply');
@@ -230,6 +234,7 @@ class NewCreateCollective extends Component {
               collective={this.state.collective}
               onSubmit={this.createCollective}
               onChange={(key, value) => this.handleChange(key, value)}
+              error={error}
             />
           )}
           {canApply && LoggedInUser && category === 'opensource' && !form && (
@@ -241,6 +246,7 @@ class NewCreateCollective extends Component {
               collective={this.state.collective}
               onSubmit={this.createCollective}
               onChange={(key, value) => this.handleChange(key, value)}
+              error={error}
             />
           )}
         </div>
