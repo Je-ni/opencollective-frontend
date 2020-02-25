@@ -98,91 +98,89 @@ class CollectiveCategoryPicker extends React.Component {
         <Flex flexDirection="column" justifyContent="center" alignItems="center" mb={[5, 6]}>
           <Box alignItems="center">
             <Flex justifyContent="center" alignItems="center" flexDirection={['column', 'row']}>
-              <Fragment>
-                <Container alignItems="center" width={[null, 280, 312]} mb={[4, null, null, 0]}>
-                  <Flex flexDirection="column" justifyContent="center" alignItems="center">
-                    <img
-                      className="categoryImage"
-                      src="/static/images/createcollective-opensource.png"
-                      alt={intl.formatMessage(this.messages.opensource)}
-                    />
-                    <StyledButton
-                      buttonSize="small"
-                      height="35px"
-                      buttonStyle="primary"
-                      mt={[2, 3]}
-                      mb={2}
-                      px={3}
-                      onClick={() => {
-                        this.handleChange('category', 'opensource');
-                        this.changeRoute({ verb: 'create', category: 'opensource' });
-                      }}
-                    >
-                      {intl.formatMessage(this.messages.opensource)}
-                    </StyledButton>
-                    <ExamplesLink href="#">{intl.formatMessage(this.messages.examples)}</ExamplesLink>
-                  </Flex>
-                </Container>
-                <Container
-                  borderLeft={['none', '1px solid #E6E8EB', null]}
-                  borderTop={['1px solid #E6E8EB', 'none', null]}
-                  alignItems="center"
-                  width={[null, 280, 312]}
-                  mb={[4, null, null, 0]}
-                >
-                  <Flex flexDirection="column" justifyContent="center" alignItems="center">
-                    <img
-                      className="categoryImage"
-                      src="/static/images/createcollective-anycommunity.png"
-                      alt={intl.formatMessage(this.messages.community)}
-                    />
-                    <StyledButton
-                      buttonSize="small"
-                      height="35px"
-                      buttonStyle="primary"
-                      mt={[2, 3]}
-                      mb={2}
-                      px={3}
-                      onClick={() => {
-                        this.handleChange('category', 'community');
-                        this.changeRoute({ verb: 'create', category: 'community' });
-                      }}
-                    >
-                      {intl.formatMessage(this.messages.community)}
-                    </StyledButton>
-                    <ExamplesLink href="#">{intl.formatMessage(this.messages.examples)}</ExamplesLink>
-                  </Flex>
-                </Container>
-                <Container
-                  borderLeft={['none', '1px solid #E6E8EB', null]}
-                  borderTop={['1px solid #E6E8EB', 'none', null]}
-                  alignItems="center"
-                  width={[null, 280, 312]}
-                >
-                  <Flex flexDirection="column" justifyContent="center" alignItems="center">
-                    <img
-                      className="categoryImage"
-                      src="/static/images/createcollective-climateinitiative.png"
-                      alt={intl.formatMessage(this.messages.climate)}
-                    />
-                    <StyledButton
-                      buttonSize="small"
-                      height="35px"
-                      buttonStyle="primary"
-                      mt={[2, 3]}
-                      mb={2}
-                      px={3}
-                      onClick={() => {
-                        this.handleChange('category', 'climate');
-                        this.changeRoute({ verb: 'create', category: 'climate' });
-                      }}
-                    >
-                      {intl.formatMessage(this.messages.climate)}
-                    </StyledButton>
-                    <ExamplesLink href="#">{intl.formatMessage(this.messages.examples)}</ExamplesLink>
-                  </Flex>
-                </Container>
-              </Fragment>
+              <Container alignItems="center" width={[null, 280, 312, null]} mb={[4, 0, null, null]}>
+                <Flex flexDirection="column" justifyContent="center" alignItems="center">
+                  <img
+                    className="categoryImage"
+                    src="/static/images/createcollective-opensource.png"
+                    alt={intl.formatMessage(this.messages.opensource)}
+                  />
+                  <StyledButton
+                    buttonSize="small"
+                    height="35px"
+                    buttonStyle="primary"
+                    mt={[2, 3]}
+                    mb={2}
+                    px={3}
+                    onClick={() => {
+                      this.handleChange('category', 'opensource');
+                      this.changeRoute({ verb: 'create', category: 'opensource' });
+                    }}
+                  >
+                    {intl.formatMessage(this.messages.opensource)}
+                  </StyledButton>
+                  <ExamplesLink href="#">{intl.formatMessage(this.messages.examples)}</ExamplesLink>
+                </Flex>
+              </Container>
+              <Container
+                borderLeft={['none', '1px solid #E6E8EB', null]}
+                borderTop={['1px solid #E6E8EB', 'none', null]}
+                alignItems="center"
+                width={[null, 280, 312, null]}
+                mb={[4, 0, null, null]}
+              >
+                <Flex flexDirection="column" justifyContent="center" alignItems="center">
+                  <img
+                    className="categoryImage"
+                    src="/static/images/createcollective-anycommunity.png"
+                    alt={intl.formatMessage(this.messages.community)}
+                  />
+                  <StyledButton
+                    buttonSize="small"
+                    height="35px"
+                    buttonStyle="primary"
+                    mt={[2, 3]}
+                    mb={2}
+                    px={3}
+                    onClick={() => {
+                      this.handleChange('category', 'community');
+                      this.changeRoute({ verb: 'create', category: 'community' });
+                    }}
+                  >
+                    {intl.formatMessage(this.messages.community)}
+                  </StyledButton>
+                  <ExamplesLink href="#">{intl.formatMessage(this.messages.examples)}</ExamplesLink>
+                </Flex>
+              </Container>
+              <Container
+                borderLeft={['none', '1px solid #E6E8EB', null, null]}
+                borderTop={['1px solid #E6E8EB', 'none', null, null]}
+                alignItems="center"
+                width={[null, 280, 312, null]}
+              >
+                <Flex flexDirection="column" justifyContent="center" alignItems="center">
+                  <img
+                    className="categoryImage"
+                    src="/static/images/createcollective-climateinitiative.png"
+                    alt={intl.formatMessage(this.messages.climate)}
+                  />
+                  <StyledButton
+                    buttonSize="small"
+                    height="35px"
+                    buttonStyle="primary"
+                    mt={[2, 3]}
+                    mb={2}
+                    px={3}
+                    onClick={() => {
+                      this.handleChange('category', 'climate');
+                      this.changeRoute({ verb: 'create', category: 'climate' });
+                    }}
+                  >
+                    {intl.formatMessage(this.messages.climate)}
+                  </StyledButton>
+                  <ExamplesLink href="#">{intl.formatMessage(this.messages.examples)}</ExamplesLink>
+                </Flex>
+              </Container>
             </Flex>
           </Box>
         </Flex>
