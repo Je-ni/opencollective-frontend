@@ -116,6 +116,7 @@ class NewCreateCollective extends Component {
   }
 
   async createCollective(CollectiveInputType) {
+    // check we have agreed to TOS
     if (!CollectiveInputType.tos) {
       this.setState({
         error: 'Please accept the terms of service',
@@ -128,19 +129,20 @@ class NewCreateCollective extends Component {
       });
       return;
     }
+    // set state to loading
     this.setState({ status: 'loading' });
+    // prepare object
+    CollectiveInputType.tags = this.state.category;
     if (this.state.github) {
       CollectiveInputType.githubHandle = this.state.github.handle;
       if (this.state.github.repo) {
         CollectiveInputType.githubRepo = this.state.github.repo;
       }
     }
-    CollectiveInputType.type = 'COLLECTIVE';
-    CollectiveInputType.HostCollectiveId = this.host.id;
-    CollectiveInputType.slug = CollectiveInputType.website;
-    delete CollectiveInputType.category;
     delete CollectiveInputType.tos;
     delete CollectiveInputType.hostTos;
+    console.log(CollectiveInputType);
+    // try mutation
     try {
       let collective;
       if (CollectiveInputType.githubHandle) {
@@ -157,7 +159,6 @@ class NewCreateCollective extends Component {
         status: 'idle',
         result: { success: 'Collective created successfully' },
       });
-
       await this.props.refetchLoggedInUser();
       if (CollectiveInputType.HostCollectiveId) {
         successParams.status = 'collectiveCreated';
@@ -182,8 +183,6 @@ class NewCreateCollective extends Component {
     const { LoggedInUser, query } = this.props;
     const { category, form, error } = this.state;
     const { token } = query;
-
-    console.log(this.state);
 
     const canApply = get(this.host, 'settings.apply');
 

@@ -33,9 +33,6 @@ class CreateCollectiveForm extends React.Component {
     this.handleChange = this.handleChange.bind(this);
 
     const collective = { ...(props.collective || {}) };
-    collective.slug = collective.slug ? collective.slug.replace(/.*\//, '') : '';
-
-    collective.backgroundImage = collective.backgroundImage || defaultBackgroundImage[collective.type];
 
     this.state = {
       collective,
@@ -53,7 +50,7 @@ class CreateCollectiveForm extends React.Component {
       },
       header: { id: 'createCollective.header.create', defaultMessage: 'Create a Collective' },
       nameLabel: { id: 'createCollective.form.nameLabel', defaultMessage: "What's the name of your collective?" },
-      urlLabel: { id: 'createCollective.form.urlLabel', defaultMessage: 'What URL would you like?' },
+      slugLabel: { id: 'createCollective.form.slugLabel', defaultMessage: 'What URL would you like?' },
       descLabel: { id: 'createCollective.form.descLabel', defaultMessage: 'What does your collective do?' },
       createButton: {
         id: 'createCollective.button.create',
@@ -88,7 +85,7 @@ class CreateCollectiveForm extends React.Component {
     const initialValues = {
       name: '',
       desc: '',
-      url: '',
+      slug: '',
     };
 
     const validate = values => {
@@ -98,8 +95,8 @@ class CreateCollectiveForm extends React.Component {
         errors.name = 'Please use fewer than 10 characters';
       }
 
-      if (values.url.length < 5) {
-        errors.url = 'Please use more than 5 characters';
+      if (values.slug.length < 5) {
+        errors.slug = 'Please use more than 5 characters';
       }
 
       if (values.desc.length > 50) {
@@ -110,11 +107,11 @@ class CreateCollectiveForm extends React.Component {
     };
 
     const submit = values => {
-      const { desc, name, url } = values;
+      const { desc, name, slug } = values;
       const collective = {
         name,
         description: desc,
-        website: url,
+        slug,
       };
       assign(collective, this.state.collective);
       this.props.onSubmit(collective);
@@ -123,7 +120,7 @@ class CreateCollectiveForm extends React.Component {
     return (
       <Flex className="CreateCollectiveForm" flexDirection="column" m={[3, 4]}>
         <Flex flexDirection="column" my={[2, 4]}>
-          <Box textAlign="left" minHeight={['32px']} marginLeft={['none', '224px']}>
+          <Box textAlign="left" minHeight={['32px']} width={[null, 832, 950, 1024]}>
             <StyledButton
               asLink
               fontSize="Paragraph"
@@ -163,10 +160,9 @@ class CreateCollectiveForm extends React.Component {
         <Flex alignItems="center" justifyContent="center">
           <Container
             mb={[1, 5]}
-            minWidth={['300px', '576px']}
-            maxWidth={['500px', '576px']}
-            border={['none', null, null, '1px solid #E6E8EB']}
-            borderRadius={['none', null, null, '8px']}
+            width={[320, 512, 576, null]}
+            border={['none', '1px solid #E6E8EB', null, null]}
+            borderRadius={['none', '8px', null, null]}
             px={[1, 4]}
           >
             <Formik validate={validate} initialValues={initialValues} onSubmit={submit} validateOnChange={true}>
@@ -187,11 +183,11 @@ class CreateCollectiveForm extends React.Component {
                       {inputProps => <Field as={StyledInput} {...inputProps} placeholder="Guinea Pigs United" />}
                     </StyledInputField>
                     <StyledInputField
-                      name="url"
-                      htmlFor="url"
-                      error={touched.url && errors.url}
-                      label={intl.formatMessage(this.messages.urlLabel)}
-                      value={values.url}
+                      name="slug"
+                      htmlFor="slug"
+                      error={touched.slug && errors.slug}
+                      label={intl.formatMessage(this.messages.slugLabel)}
+                      value={values.slug}
                       required
                       my={4}
                     >

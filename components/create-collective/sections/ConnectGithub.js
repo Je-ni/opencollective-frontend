@@ -285,7 +285,7 @@ class ConnectGithub extends React.Component {
               </Flex>
             )}
             <Flex alignItems="center" justifyContent="center">
-              <Box mb={[1, 5]} minWidth={['300px', '576px']} maxWidth={['500px', '576px']} px={[1, 4]}>
+              <Box mb={[1, 5]} minWidth={['300px', '576px']} maxWidth={[288, 608, 576, null]} px={[1, 4]}>
                 <P fontSize="Caption" mb={3}>
                   <FormattedMessage
                     id="createcollective.opensource.p1"
@@ -347,12 +347,12 @@ class ConnectGithub extends React.Component {
                 <Flex justifyContent="center" alignItems="center" flexDirection={['column', 'row']}>
                   <StyledButton
                     mx={2}
-                    mb={[3, null, null, 0]}
+                    mb={[3, 0, null, null]}
                     px={[2, 3]}
                     textAlign="center"
                     buttonSize="small"
                     height="36px"
-                    maxWidth="196px"
+                    width="196px"
                     buttonStyle="primary"
                     onClick={() => {
                       if (!this.state.checked) {
@@ -373,7 +373,7 @@ class ConnectGithub extends React.Component {
                     textAlign="center"
                     buttonSize="small"
                     height="36px"
-                    maxWidth="213px"
+                    width="213px"
                     buttonStyle="secondary"
                     onClick={() => {
                       this.handleChange('category', 'opensource');
