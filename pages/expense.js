@@ -1,146 +1,230 @@
-import React from 'react';
-import PropTypes from 'prop-types';
-import { FormattedMessage } from 'react-intl';
-
-import ExpenseWithData from '../components/expenses/ExpenseWithData';
-
-import { ssrNotFoundError } from '../lib/nextjs_utils';
-import Header from '../components/Header';
-import Body from '../components/Body';
-import Footer from '../components/Footer';
-import CollectiveCover from '../components/CollectiveCover';
 import { Box, Flex } from '@rebass/grid';
-import ExpenseNeedsTaxFormMessage from '../components/expenses/ExpenseNeedsTaxFormMessage';
+import PropTypes from 'prop-types';
+import React from 'react';
+import { FormattedMessage, injectIntl, defineMessages } from 'react-intl';
+
+import Body from '../components/Body';
+import CollectiveCover from '../components/CollectiveCover';
 import ErrorPage, { generateError } from '../components/ErrorPage';
+import ExpenseNeedsTaxFormMessage from '../components/expenses/ExpenseNeedsTaxFormMessage';
+import ExpenseWithData from '../components/expenses/ExpenseWithData';
+import Footer from '../components/Footer';
+import Header from '../components/Header';
 import Link from '../components/Link';
-
-import { addCollectiveCoverData } from '../lib/graphql/queries';
-
-import { withUser } from '../components/UserProvider';
-import MessageBox from '../components/MessageBox';
+import PageFeatureNotSupported from '../components/PageFeatureNotSupported';
 import StyledButton from '../components/StyledButton';
+import { withUser } from '../components/UserProvider';
+import hasFeature, { FEATURES } from '../lib/allowed-features';
+import { addCollectiveCoverData } from '../lib/graphql/queries';
+import { ssrNotFoundError } from '../lib/nextjs_utils';
+import Page from '../components/Page';
+import { API_V2_CONTEXT, gqlV2 } from '../lib/graphql/helpers';
+import { graphql } from 'react-apollo';
+import { CommentFieldsFragment } from '../components/conversations/graphql';
+import CollectiveThemeProvider from '../components/CollectiveThemeProvider';
+import CollectiveNavbar from '../components/CollectiveNavbar';
+import { Sections } from '../components/collective-page/_constants';
+import ExpenseSummary from '../components/expenses/ExpenseSummary';
+import StyledLink from '../components/StyledLink';
+import Thread from '../components/conversations/Thread';
+import CommentIcon from '../components/icons/CommentIcon';
+import CommentForm from '../components/conversations/CommentForm';
+import StyledRoundButton from '../components/StyledRoundButton';
+import styled from 'styled-components';
+import ExpenseAdminActions from '../components/expenses/ExpenseAdminActions';
+
+const messages = defineMessages({
+  title: {
+    id: 'ExpensePage.title',
+    defaultMessage: 'Expense #{id}: {title}',
+  },
+});
 
 class ExpensePage extends React.Component {
-  static getInitialProps({ query: { collectiveSlug, ExpenseId, createSuccess } }) {
-    return { slug: collectiveSlug, ExpenseId: parseInt(ExpenseId), expenseCreated: createSuccess };
+  static getInitialProps({ query: { collectiveSlug, ExpenseId } }) {
+    return { collectiveSlug, ExpenseId: parseInt(ExpenseId) };
   }
 
   static propTypes = {
-    slug: PropTypes.string, // for addCollectiveCoverData
+    collectiveSlug: PropTypes.string,
     ExpenseId: PropTypes.number,
-    data: PropTypes.object.isRequired, // from withData
     LoggedInUser: PropTypes.object,
     expenseCreated: PropTypes.string, // actually a stringed boolean 'true'
+    /** from withData */
+    data: PropTypes.object.isRequired,
+    /** from injectIntl */
+    intl: PropTypes.object,
   };
 
-  constructor(props) {
-    super(props);
-    this.state = {
-      isPayActionLocked: false,
-    };
-  }
-
-  getSuccessMessage() {
-    const { data, expenseCreated } = this.props;
-    if (!expenseCreated) {
-      return null;
+  getPageMetaData(expense) {
+    if (expense) {
+      const { intl } = this.props;
+      return { title: intl.formatMessage(messages.title, { id: expense.id, title: expense.title }) };
+    } else {
+      const { collectiveSlug, ExpenseId } = this.props;
+      return { title: `Expense #${ExpenseId} on ${collectiveSlug}` };
     }
-
-    return (
-      <MessageBox type="success" withIcon data-cy="expenseCreated">
-        {data.Collective.host ? (
-          <FormattedMessage
-            id="expense.created"
-            defaultMessage="Your expense has been submitted with success. It is now pending approval from one of the core contributors of the collective. You will be notified by email once it has been approved. Then, the host ({host}) will proceed to reimburse your expense."
-            values={{ host: data.Collective.host.name }}
-          />
-        ) : (
-          <FormattedMessage
-            id="expense.created.noHost"
-            defaultMessage="Your expense has been submitted with success. It is now pending approval from one of the core contributors of the collective. You will be notified by email once it has been approved."
-          />
-        )}
-      </MessageBox>
-    );
   }
 
   render() {
-    const { slug, data, ExpenseId, LoggedInUser } = this.props;
+    const { collectiveSlug, data } = this.props;
 
-    if (!data || data.error || data.loading) {
-      return <ErrorPage data={data} />;
-    } else if (!data.Collective) {
-      ssrNotFoundError(); // Force 404 when rendered server side
-      return <ErrorPage error={generateError.notFound(slug)} log={false} />;
+    if (!data.loading) {
+      if (!data || data.error) {
+        return <ErrorPage data={data} />;
+      } else if (!data.account) {
+        ssrNotFoundError(); // Force 404 when rendered server side
+        return <ErrorPage error={generateError.notFound(collectiveSlug)} log={false} />;
+      } else if (!data.expense) {
+        ssrNotFoundError(); // Force 404 when rendered server side
+        return null; // TODO: page for expense not found
+      } else if (!hasFeature(data.account, FEATURES.NEW_EXPENSE_FLOW)) {
+        return <PageFeatureNotSupported />;
+      }
     }
 
-    const collective = data.Collective;
-    const successMessage = this.getSuccessMessage();
+    const collective = data && data.account;
+    const host = collective && collective.host;
+    const expense = data && data.expense;
+
     return (
-      <div className="ExpensePage">
-        <Header collective={collective} LoggedInUser={LoggedInUser} />
-
-        <Body>
-          <CollectiveCover
-            key={collective.slug}
-            collective={collective}
-            LoggedInUser={LoggedInUser}
-            displayContributeLink={collective.isActive && collective.host ? true : false}
-            callsToAction={{ hasSubmitExpense: !collective.isArchived }}
-          />
-
-          <Box maxWidth={1200} m="0 auto" px={[1, 3, 4]} py={[2, 3]}>
-            <Flex flexWrap="wrap" mb={4} justifyContent={['center', 'left']}>
-              <Link route="expenses" params={{ collectiveSlug: collective.slug }}>
-                <StyledButton my={1} data-cy="viewAllExpenses">
-                  ← <FormattedMessage id="expenses.viewAll" defaultMessage="View All Expenses" />
-                </StyledButton>
-              </Link>
-              {!collective.isArchived && (
-                <Link route="createExpense" params={{ collectiveSlug: collective.slug }}>
-                  <StyledButton my={1} mx={3} data-cy="submit-expense-btn">
-                    <FormattedMessage id="expenses.sendAnotherExpense" defaultMessage="Submit Another Expense" />
-                  </StyledButton>
-                </Link>
-              )}
+      <Page collective={collective} {...this.getPageMetaData(expense)} withoutGlobalStyles>
+        <CollectiveThemeProvider collective={collective}>
+          <CollectiveNavbar collective={collective} isLoading={!collective} selected={Sections.BUDGET} />
+          <Flex mt={3}>
+            <Flex flexDirection="column" alignItems="flex-end" width="calc((100% - 1260px) / 2)" minWidth={56} pt={72}>
+              <ExpenseAdminActions />
             </Flex>
-
-            <hr />
-            <Box mt={4}>
-              <ExpenseNeedsTaxFormMessage
-                id={ExpenseId}
-                fallback={successMessage}
-                loadingPlaceholder={successMessage}
-              />
+            <Box flex="1" maxWidth={850} p={4}>
+              <Box mb={4}>
+                <StyledLink as={Link} color="black.600" route="expenses" params={{ collectiveSlug }}>
+                  &larr;&nbsp;
+                  <FormattedMessage id="Back" defaultMessage="Back" />
+                </StyledLink>
+              </Box>
+              <Box mb={3}>
+                <ExpenseSummary expense={expense} host={host} isLoading={!expense} />
+              </Box>
+              {expense && (
+                <Box mb={3} pt={3}>
+                  <Thread
+                    collective={collective}
+                    items={expense.comments.nodes}
+                    onCommentDeleted={this.onCommentDeleted}
+                  />
+                </Box>
+              )}
+              <Flex mt="40px">
+                <Box display={['none', null, 'block']} flex="0 0" p={3}>
+                  <CommentIcon size={24} color="lightgrey" />
+                </Box>
+                <Box flex="1 1" maxWidth={[null, null, 'calc(100% - 56px)']}>
+                  <CommentForm
+                    id="new-comment-on-expense"
+                    ExpenseId={expense && expense.id}
+                    disabled={!expense}
+                    onSuccess={this.onCommentAdded}
+                  />
+                </Box>
+              </Flex>
             </Box>
-
-            <Box my={4} py={1} px={[1, 3]} maxWidth={800}>
-              <ExpenseWithData
-                id={ExpenseId}
-                collective={collective}
-                view="details"
-                LoggedInUser={LoggedInUser}
-                allowPayAction={!this.state.isPayActionLocked}
-                lockPayAction={() => this.setState({ isPayActionLocked: true })}
-                unlockPayAction={() => this.setState({ isPayActionLocked: false })}
-              />
-            </Box>
-          </Box>
-        </Body>
-
-        <Footer />
-      </div>
+          </Flex>
+        </CollectiveThemeProvider>
+      </Page>
     );
   }
 }
 
-export default withUser(
-  addCollectiveCoverData(ExpensePage, {
-    options: props => ({
-      variables: {
-        slug: props.slug,
-        throwIfMissing: false,
-      },
-    }),
-  }),
+const getData = graphql(
+  gqlV2`
+    query CreateExpensePage($collectiveSlug: String!, $ExpenseId: Int!) {
+      expense(legacyId: $ExpenseId) {
+        id
+        legacyId
+        description
+        currency
+        type
+        attachments {
+          id
+          incurredAt
+          description
+          amount
+          url
+        }
+        payee {
+          id
+          slug
+          name
+          type
+          location {
+            address
+            country
+          }
+        }
+        payoutMethod {
+          id
+          type
+          data
+        }
+        comments {
+          nodes {
+            ...CommentFields
+          }
+        }
+      }
+      account(slug: $collectiveSlug, throwIfMissing: false) {
+        id
+        slug
+        name
+        type
+        description
+        settings
+        imageUrl
+        twitterHandle
+        currency
+        expensePolicy
+        ... on Collective {
+          id
+          isApproved
+          balance
+          host {
+            id
+            name
+            slug
+            type
+            expensePolicy
+            location {
+              address
+              country
+            }
+          }
+        }
+        ... on Event {
+          id
+          isApproved
+          balance
+          host {
+            id
+            name
+            slug
+            type
+            expensePolicy
+            location {
+              address
+              country
+            }
+          }
+        }
+      }
+    }
+
+    ${CommentFieldsFragment}
+  `,
+  {
+    options: {
+      context: API_V2_CONTEXT,
+    },
+  },
 );
+
+export default injectIntl(getData(ExpensePage));

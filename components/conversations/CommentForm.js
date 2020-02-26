@@ -62,6 +62,7 @@ const CommentForm = ({
   router,
   loadingLoggedInUser,
   LoggedInUser,
+  isDisabled,
 }) => {
   const [createComment, { error, data }] = useMutation(createCommentMutation, mutationOptions);
   const { register, triggerValidation, setValue, formState, handleSubmit } = useForm({ mode: 'onChange' });
@@ -98,7 +99,7 @@ const CommentForm = ({
             editorMinHeight={150}
             placeholder={formatMessage(messages.placeholder)}
             autoFocus={isAutoFocused(id)}
-            disabled={!LoggedInUser || formState.isSubmitting}
+            disabled={isDisabled || !LoggedInUser || formState.isSubmitting}
             reset={get(data, 'createComment.id')}
             fontSize="13px"
             onChange={e => {
@@ -117,7 +118,7 @@ const CommentForm = ({
           mt={3}
           minWidth={150}
           buttonStyle="primary"
-          disabled={!LoggedInUser || !formState.isValid}
+          disabled={isDisabled || !LoggedInUser || !formState.isValid}
           loading={formState.isSubmitting}
           data-cy="submit-comment-btn"
         >
@@ -139,6 +140,8 @@ CommentForm.propTypes = {
   UpdateId: PropTypes.number,
   /** Called when the comment is created successfully */
   onSuccess: PropTypes.func,
+  /** disable the inputs */
+  isDisabled: PropTypes.bool,
   /** @ignore from withUser */
   loadingLoggedInUser: PropTypes.bool,
   /** @ignore from withUser */

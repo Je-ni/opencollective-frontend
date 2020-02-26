@@ -308,7 +308,7 @@ const BudgetItem = ({ item, isInverted, isCompact, canDownloadInvoice, intl }) =
     </P>
   ) : (
     <P color="black.500" fontStyle="italic" fontWeight="600" fontSize="Paragraph">
-      <FormattedMessage id="BudgetItemsList.NoDescription" defaultMessage="No description provided" />
+      <FormattedMessage id="NoDescription" defaultMessage="No description provided" />
     </P>
   );
 
